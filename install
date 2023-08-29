@@ -1,0 +1,22 @@
+#!/bin/bash
+###############################################################################
+# Devpm installer
+###############################################################################
+
+function install_cookiecutter() {
+    pipx install cookiecutter
+}
+
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/sandor-juhasz/js-shell-lib/main/install)"
+
+install_cookiecutter   
+
+git clone https://github.com/sandor-juhasz/devpm.git ~/.local/share/devpm
+
+mkdir -p ~/projects
+if [ ! -d ~/projects/project-templates ]; then
+    git clone https://github.com/sandor-juhasz/project-templates.git ~/projects/project-templates
+fi
+
+ln -s ~/.local/share/devpm/bin/create-project ~/.local/bin/create-project
+ln -s ~/.local/share/devpm/bin/edit-project ~/.local/bin/edit-project
