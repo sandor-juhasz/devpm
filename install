@@ -3,7 +3,12 @@
 # Devpm installer
 ###############################################################################
 
+set -e
+
 function install_cookiecutter() {
+    if ! which pipx >/dev/null; then
+        echo "Cannot install cookiecutter, pipx is not installed."
+    fi
     pipx install cookiecutter
 }
 
