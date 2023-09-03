@@ -54,7 +54,7 @@ main() {
     pushd "${project_dir}" || die "Cannot enter ${project_dir} to initialize git."
     git init
     popd || die "Popd failed."
-    tui_confirm "Do you want to create a GitHub repository '${project_name}'?" && create_github_repo
+    tui_confirm "Do you want to create a GitHub repository '${project_name}'?" "No" && create_github_repo
     tui_confirm "Do you want to edit the project?" && edit-project "${project_dir}"
 }
 
