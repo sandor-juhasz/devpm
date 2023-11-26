@@ -15,6 +15,32 @@ add_dir_to_cache() {
     mv "${cache_file}.new" "${cache_file}"
 }
 
+open_with_editor() {
+    local project_path=$1
+
+    if [[ ! -d "${project_path}" ]]; then
+        echo "Not a directory: ${dir_to_open}"
+        exit 1
+    fi
+
+    local devcontainer_config="${project_path}/.devcontainer/devcontainer.json"
+    echo "Looking for $devcontainer_config..."
+    if [[ -e  "$devcontainer_config" ]]; then
+        echo "DevContainer project found. Opening it with VSCode..."
+
+        local mypath="$(wslpath -w $project_path)"
+        local p=$(printf "%s" "$mypath" | hexdump -v -e "/1 \"%02x\"")
+        echo $p
+        local folder_uri="vscode-remote://dev-container+${p}/workspaces/$(basename $project_path)"
+
+        echo "Opening folder URI:  ${folder_uri}"
+        code --folder-uri "${folder_uri}"
+    else
+        echo "DevContainer config not found."
+        $EDITOR "${project_path}"
+    fi
+}
+
 if [ ! -d "${cache_dir}" ]; then
     mkdir -p "${cache_dir}"
 fi
@@ -33,7 +59,7 @@ if [ $# -eq 0 ]; then
     if [ $? -ne 0 ]; then
         exit 1
     fi
-    $EDITOR "${project}"
+    open_with_editor "${project}"
 else
     dir_to_open=$1
     if [ ! -d "${dir_to_open}" ]; then
@@ -42,6 +68,6 @@ else
     else
         full_path=$(readlink -f "$dir_to_open")
         add_dir_to_cache "${full_path}"
-        $EDITOR "${full_path}"
+        open_with_editor "${full_path}"
     fi
 fi
