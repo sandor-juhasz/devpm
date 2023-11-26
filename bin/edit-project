@@ -30,10 +30,7 @@ open_with_editor() {
 
         local mypath="$(wslpath -w $project_path)"
         local p=$(printf "%s" "$mypath" | hexdump -v -e "/1 \"%02x\"")
-        echo $p
         local folder_uri="vscode-remote://dev-container+${p}/workspaces/$(basename $project_path)"
-
-        echo "Opening folder URI:  ${folder_uri}"
         code --folder-uri "${folder_uri}"
     else
         echo "DevContainer config not found."
