@@ -38,21 +38,8 @@ open_with_editor() {
     fi
 }
 
-if [ ! -d "${cache_dir}" ]; then
-    mkdir -p "${cache_dir}"
-fi
-if [ ! -f "${cache_file}" ]; then
-    touch "${cache_file}"
-fi
-
-# Process the cache file, remove any directory that does not exist
-tmpfile=$(mktemp)
-cp "$cache_file" "$tmpfile"
-awk -F '\n' '{ if (system("test -d \"" $1 "\"")==0) { print $1 } }' "$tmpfile" >"$cache_file"
-rm "$tmpfile"
-
 if [ $# -eq 0 ]; then
-    project=$(fzf --tac --border=rounded --border-label="Select a project to edit" <"${cache_file}")
+    project=$(select-project "Select a project to edit")
     if [ $? -ne 0 ]; then
         exit 1
     fi

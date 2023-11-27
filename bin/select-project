@@ -1,0 +1,7 @@
+#!/bin/bash
+###############################################################################
+# Selects a project folder using fzf
+###############################################################################
+
+title=${1:-Select a project}
+list-projects | fzf --tac --border=rounded --border-label="$title"

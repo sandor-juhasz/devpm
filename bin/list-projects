@@ -1,0 +1,28 @@
+#!/bin/bash
+###############################################################################
+# Lists the discovered project directories
+###############################################################################
+
+cache_dir=~/.local/var/cache
+cache_file="${cache_dir}/edit-project.cache"
+
+if [ ! -d "${cache_dir}" ]; then
+    mkdir -p "${cache_dir}"
+fi
+if [ ! -f "${cache_file}" ]; then
+    touch "${cache_file}"
+fi
+
+#
+# Process the cache file, remove any directory which does not exist anymore.
+#
+tmpfile=$(mktemp)
+cp "$cache_file" "$tmpfile"
+awk -F '\n' '{ if (system("test -d \"" $1 "\"")==0) { print $1 } }' "$tmpfile" >"$cache_file"
+rm "$tmpfile"
+
+#
+# Merge the cache file with the directories of $PROJECTS_HOME
+#
+{ find "$PROJECTS_HOME"/* -prune -type d -exec realpath {} \; ; cat "$cache_file"; } | sort -u
+

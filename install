@@ -25,6 +25,8 @@ fi
 
 ln -s ~/.local/share/devpm/bin/create-project ~/.local/bin/create-project
 ln -s ~/.local/share/devpm/bin/edit-project ~/.local/bin/edit-project
+ln -s ~/.local/share/devpm/bin/list-projects ~/.local/bin/list-projects
+ln -s ~/.local/share/devpm/bin/select-project ~/.local/bin/select-project
 
 echo "export PROJECTS_HOME=$HOME/projects" >~/.config/bashrc.d/devpm.sh
 echo "export PROJECTS_HOME=$HOME/projects" >~/.config/zshrc.d/devpm.sh
