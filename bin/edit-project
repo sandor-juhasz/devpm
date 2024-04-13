@@ -15,6 +15,27 @@ add_dir_to_cache() {
     mv "${cache_file}.new" "${cache_file}"
 }
 
+is_git_directory() {
+    pushd $1 >/dev/null || exit 1
+    if git rev-parse --is-inside-work-tree >/dev/null; then
+        popd >/dev/null || exit 1
+        return 0
+    else
+        popd >/dev/null || exit 1
+        return 1
+    fi
+}
+
+get_git_root() {
+    pushd $1 >/dev/null || exit 1
+    git rev-parse --show-toplevel
+    popd >/dev/null || exit 1
+}
+
+#
+# Parameters:
+#   $1: The full path of the project directory to open.
+# 
 open_with_editor() {
     local project_path=$1
 
@@ -30,7 +51,22 @@ open_with_editor() {
 
         local mypath="$(wslpath -w $project_path)"
         local p=$(printf "%s" "$mypath" | hexdump -v -e "/1 \"%02x\"")
-        local folder_uri="vscode-remote://dev-container+${p}/workspaces/$(basename $project_path)"
+        local path_suffix
+        if is_git_directory "$project_path"; then
+            #echo "Git directory."
+            local git_root=$(get_git_root "$project_path")
+            
+            
+            local git_root_parent="$(dirname "$git_root")"
+            local git_root_parent_length="${#git_root_parent}"
+            local path_suffix="${project_path:${git_root_parent_length}}"
+        else
+            path_suffix="/$(basename $project_path)"
+        fi
+        #echo "Path suffix: $path_suffix"
+
+        local folder_uri="vscode-remote://dev-container+${p}/workspaces${path_suffix}"
+        #echo "Folder uri: $folder_uri"
         code --folder-uri "${folder_uri}"
     else
         echo "DevContainer config not found."
