@@ -70,12 +70,12 @@ open_with_editor() {
         #echo "Folder uri: $folder_uri"
         code --folder-uri "${folder_uri}"
     else
-        echo "DevContainer config not found."
+        echo "Opening project without devcontainer."
         $EDITOR "${project_path}"
     fi
 }
 
-if [[ $# -eq 1 && $1 == '--no-devcontainer' ]]; then
+if [[ $# -gt 0 && $1 == '--no-devcontainer' ]]; then
     echo "Disabling devcontainers..."
     start_devcontainer=false
     shift 1
