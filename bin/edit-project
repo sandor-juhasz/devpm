@@ -47,7 +47,7 @@ open_with_editor() {
 
     local devcontainer_config="${project_path}/.devcontainer/devcontainer.json"
     echo "Looking for $devcontainer_config..."
-    if [[ -e  "$devcontainer_config" && start_devcontainer == "true" ]]; then
+    if [[ -e  "$devcontainer_config" && $start_devcontainer == "true" ]]; then
         echo "DevContainer project found. Opening it with VSCode..."
 
         local mypath="$(wslpath -w $project_path)"
