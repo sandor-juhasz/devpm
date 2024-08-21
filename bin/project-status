@@ -1,0 +1,136 @@
+#!/bin/bash
+
+function project_name() {
+   basename $1
+}
+
+function is_git_project() {
+   if [[ -d "$1/.git" ]]; then
+      echo "true"
+   else
+      echo "false"
+   fi
+}
+
+function num_of_local_changes() {
+   pushd $1 >/dev/null
+   git status -s | wc -l
+   popd >/dev/null
+}
+
+function get_git_remote_url() {
+   pushd $1 >/dev/null
+   git remote get-url origin 2> /dev/null   
+   popd >/dev/null
+}
+
+docker_ps_log=$(docker ps -a)
+function has_devcontainer() {   
+   if echo "${docker_ps_log}" | grep "vsc-$1-" >/dev/null; then
+      echo "true"
+   else
+      echo "false"
+   fi
+}
+
+function is_devcontainer_project() {
+   if [[ -e "$1/.devcontainer/devcontainer.json" ]]; then
+      echo "true"
+   else
+      echo "false"
+   fi
+}
+
+function get_git_current_branch() {
+   pushd $1 >/dev/null
+   git symbolic-ref --short HEAD
+   popd >/dev/null
+}
+
+function has_unpushed_changes() {
+   echo "TBD"
+}
+
+function last_update_date() {
+   pushd $1 >/dev/null
+   date -r "$(find . -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")" "+%Y-%m-%d"
+   popd >/dev/null
+}
+
+function size() {
+   du -hs $1  | cut -f1
+}
+
+function details() {
+   echo $PROJECT_NAME
+   echo "  Last update date: $LAST_UPDATE_DATE"
+   echo "  Size:             $SIZE"
+   echo ""
+   if [[ "$IS_GIT_PROJECT" == "true" ]]; then
+      echo "  Git project"
+      echo "    Remote URL:              $GIT_REMOTE_URL"
+      echo "    Current branch:          $GIT_CURRENT_BRANCH"
+      echo "    Has uncommitted changes: $GIT_UNCOMMITTED_CHANGES"
+      echo ""
+   fi 
+
+   if [[ "$IS_DEVCONTAINER_PROJECT" == "true" ]]; then
+      echo "  Development Container project"
+      echo "    Has devcontainer: $HAS_DEVCONTAINER"
+   fi
+   echo
+   echo
+}
+
+function summary() {
+   GIT_SYMBOL=""
+   if [[ "$IS_GIT_PROJECT" == "false" ]]; then
+      GIT_SYMBOL=""
+   elif [[ -z "$GIT_REMOTE_URL" ]]; then
+      GIT_SYMBOL=""
+   elif [[ "$GIT_REMOTE_URL" == *"github.com"* ]]; then
+      GIT_SYMBOL=""
+   elif [[ "$GIT_REMOTE_URL" == *"azure"* ]]; then
+      GIT_SYMBOL=""
+   fi
+   if [[ "$IS_GIT_PROJECT" == "true" && $GIT_UNCOMMITTED_CHANGES == "true" ]]; then
+      GIT_SYMBOL="$GIT_SYMBOL!"
+   fi
+
+   if [[ "$IS_DEVCONTAINER_PROJECT" == "true" ]]; then
+      DEVCONTAINER_SYMBOL=""
+      if [[ "$HAS_DEVCONTAINER" == "true" ]]; then
+         DEVCONTAINER_SYMBOL="$DEVCONTAINER_SYMBOL󰡨"
+      else
+         DEVCONTAINER_SYMBOL="$DEVCONTAINER_SYMBOL"
+      fi
+   else
+      DEVCONTAINER_SYMBOL=""
+   fi
+
+   printf "%-30s %s %7s  %-4s   %-5s\n" "$PROJECT_NAME" "$LAST_UPDATE_DATE" "$SIZE" "$GIT_SYMBOL" "$DEVCONTAINER_SYMBOL"
+
+}
+
+
+echo "Project name                   Last Modif    Size  Git  Devcontainer"
+echo "---------------------------------------------------------------------"
+for project_dir in "$PROJECTS_HOME"/*; do
+   PROJECT_NAME=$(project_name "$project_dir")
+   LAST_UPDATE_DATE=$(last_update_date "$project_dir")
+   SIZE=$(size "$project_dir")
+   IS_GIT_PROJECT=$(is_git_project "$project_dir")
+   if [[ "$IS_GIT_PROJECT" == "true" ]]; then
+      GIT_REMOTE_URL=$(get_git_remote_url "$project_dir")
+      GIT_NUM_OF_LOCAL_CHANGES=$(num_of_local_changes "$project_dir")
+      GIT_UNCOMMITTED_CHANGES=$([ "$GIT_NUM_OF_LOCAL_CHANGES" == "0" ] && echo "false" || echo "true")
+      GIT_CURRENT_BRANCH=$(get_git_current_branch "$project_dir")
+   fi
+   IS_DEVCONTAINER_PROJECT=$(is_devcontainer_project $project_dir)
+   if [[ "$IS_DEVCONTAINER_PROJECT" == "true" ]]; then
+      HAS_DEVCONTAINER=$(has_devcontainer "$PROJECT_NAME")
+   fi
+
+   # details
+   summary
+done
