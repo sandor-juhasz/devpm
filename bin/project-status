@@ -25,8 +25,13 @@ function get_git_remote_url() {
 }
 
 docker_ps_log=$(docker ps -a)
+if [[ "$?" != "0" ]]; then
+   docker_ps_log="N/A"
+fi
 function has_devcontainer() {   
-   if echo "${docker_ps_log}" | grep "vsc-$1-" >/dev/null; then
+   if [[ "$docker_ps_log" == "N/A" ]]; then
+      echo "N/A"
+   elif echo "${docker_ps_log}" | grep "vsc-$1-" >/dev/null; then
       echo "true"
    else
       echo "false"
@@ -97,9 +102,11 @@ function summary() {
       GIT_SYMBOL="$GIT_SYMBOL!"
    fi
 
-   if [[ "$IS_DEVCONTAINER_PROJECT" == "true" ]]; then
+   if [[ "$IS_DEVCONTAINER_PROJECT" == "true" ]]; then      
       DEVCONTAINER_SYMBOL=""
-      if [[ "$HAS_DEVCONTAINER" == "true" ]]; then
+      if [[ "$HAS_DEVCONTAINER" == "N/A" ]]; then
+         DEVCONTAINER_SYMBOL="$DEVCONTAINER_SYMBOL?"
+      elif [[ "$HAS_DEVCONTAINER" == "true" ]]; then
          DEVCONTAINER_SYMBOL="$DEVCONTAINER_SYMBOL󰡨"
       else
          DEVCONTAINER_SYMBOL="$DEVCONTAINER_SYMBOL"
