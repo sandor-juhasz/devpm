@@ -123,6 +123,7 @@ function summary() {
 echo "Project name                   Last Modif    Size  Git  Devcontainer"
 echo "---------------------------------------------------------------------"
 for project_dir in "$PROJECTS_HOME"/*; do
+   [[ -d "$project_dir" ]] || continue
    PROJECT_NAME=$(project_name "$project_dir")
    LAST_UPDATE_DATE=$(last_update_date "$project_dir")
    SIZE=$(size "$project_dir")
